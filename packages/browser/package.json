@@ -1,0 +1,36 @@
+{
+  "name": "@rhendium/browser",
+  "version": "0.1.0",
+  "description": "Verified downloader and cache for Rhendium browser builds",
+  "type": "module",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/rhendium/rhendium-playwright#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhendium/rhendium-playwright.git",
+    "directory": "packages/browser"
+  },
+  "bin": {
+    "rhendium": "src/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./builds.json": "./builds.json"
+  },
+  "files": [
+    "builds.json",
+    "src"
+  ],
+  "dependencies": {
+    "extract-zip": "^2.0.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
