@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "node --test packages/*/test/*.test.js",
+    "test": "node --test packages/browser/test/browser.test.js packages/playwright/test/playwright.test.js",
     "test:integration": "node packages/playwright/test/integration.js"
   },
   "devDependencies": {
