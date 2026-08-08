@@ -44,5 +44,6 @@ Downloads are explicit rather than npm `postinstall` side effects. Set
 `RHENDIUM_EXECUTABLE_PATH` together with `RHENDIUM_FONT_CONFIG` to test a local
 build.
 
-The initial release supports Linux x86-64. Windows and macOS assets can be
-added to the embedded build manifest without changing the public API.
+The initial release supports Linux x86-64 (glibc 2.25 or newer) and Windows
+x86-64. macOS assets can be added to the embedded build manifest without
+changing the public API.

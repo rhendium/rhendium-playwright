@@ -15,6 +15,13 @@
           "archiveRoot": "rhendium-linux-x64",
           "executable": "chrome",
           "minimumGlibc": "2.25"
+        },
+        "win-x64": {
+          "url": "https://github.com/rhendium/rhendium/releases/download/v153.0.7995.0-r1/rhendium-153.0.7995.0-r1-win-x64.zip",
+          "sha256": "cb7762afee501b7b65e892c1b94c7bb77682c8c9600a8bd4e35c2ebecb4a50d7",
+          "size": 188192974,
+          "archiveRoot": "rhendium-win-x64",
+          "executable": "chrome.exe"
         }
       }
     }
