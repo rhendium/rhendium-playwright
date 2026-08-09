@@ -1,6 +1,6 @@
 {
   "name": "@rhendium/playwright",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Launch Rhendium through Playwright's Chromium driver",
   "type": "module",
   "license": "MIT",
@@ -9,7 +9,7 @@
   "repository": { "type": "git", "url": "git+https://github.com/rhendium/rhendium-playwright.git", "directory": "packages/playwright" },
   "exports": { ".": { "types": "./src/index.d.ts", "import": "./src/index.js" } },
   "files": ["src"],
-  "dependencies": { "@rhendium/browser": "0.1.0" },
+  "dependencies": { "@rhendium/browser": "0.1.1" },
   "peerDependencies": { "@playwright/test": ">=1.62.1 <2" },
   "engines": { "node": ">=20" }
 }
