@@ -1,12 +1,14 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { createReadStream, createWriteStream, existsSync, readFileSync } from 'node:fs';
-import { access, chmod, mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir, platform as hostPlatform, arch as hostArch } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import extract from 'extract-zip';
+import { extractArchive } from './archive.js';
+import { installationComplete } from './installation.js';
+import { withLock } from './lock.js';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifestPath = join(packageRoot, 'builds.json');
@@ -57,14 +59,6 @@ async function exists(path) {
   try { await access(path); return true; } catch { return false; }
 }
 
-async function installationComplete(destination, expectedFiles) {
-  if (!await exists(join(destination, '.installation-complete'))) return false;
-  for (const relative of expectedFiles) {
-    if (!await exists(join(destination, relative))) return false;
-  }
-  return true;
-}
-
 async function sha256(path) {
   const hash = createHash('sha256');
   for await (const chunk of createReadStream(path)) hash.update(chunk);
@@ -93,25 +87,14 @@ async function download(url, destination, onProgress) {
   onProgress?.({ receivedBytes, totalBytes, complete: true });
 }
 
-async function withLock(lockPath, operation) {
-  const deadline = Date.now() + 5 * 60_000;
-  while (true) {
-    try {
-      await mkdir(lockPath);
-      break;
-    } catch (error) {
-      if (error.code !== 'EEXIST' || Date.now() >= deadline) throw error;
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
+async function installAsset({ descriptor, destination, expectedFiles, cache, label, onProgress, onStatus }) {
+  if (await installationComplete(destination, expectedFiles, descriptor)) {
+    onStatus?.(`Using installed ${label}`);
+    return;
   }
-  try { return await operation(); } finally { await rm(lockPath, { recursive: true, force: true }); }
-}
-
-async function installAsset({ descriptor, destination, expectedFiles, cache, label, onProgress }) {
-  if (await installationComplete(destination, expectedFiles)) return;
   await mkdir(dirname(destination), { recursive: true });
   await withLock(`${destination}.lock`, async () => {
-    if (await installationComplete(destination, expectedFiles)) return;
+    if (await installationComplete(destination, expectedFiles, descriptor)) return;
     const nonce = `${process.pid}-${randomBytes(5).toString('hex')}`;
     const temporary = join(cache, '.downloads', nonce);
     const archive = join(temporary, 'asset.zip');
@@ -119,21 +102,42 @@ async function installAsset({ descriptor, destination, expectedFiles, cache, lab
     await mkdir(extracted, { recursive: true });
     try {
       await download(descriptor.url, archive, progress => onProgress?.({ label, ...progress }));
+      onStatus?.(`Verifying ${label}`);
       const info = await stat(archive);
       if (info.size !== descriptor.size) throw new Error(`${label} size mismatch: expected ${descriptor.size}, got ${info.size}`);
       const actualHash = await sha256(archive);
       if (actualHash !== descriptor.sha256) throw new Error(`${label} SHA-256 mismatch`);
-      await extract(archive, { dir: extracted });
+      onStatus?.(`Extracting ${label}`);
+      const extractionController = new AbortController();
+      const extractionTimeout = setTimeout(
+        () => extractionController.abort(new Error(`${label} extraction timed out`)),
+        30 * 60_000,
+      );
+      try {
+        await extractArchive(archive, { dir: extracted, signal: extractionController.signal });
+      } finally {
+        clearTimeout(extractionTimeout);
+      }
       const root = join(extracted, descriptor.archiveRoot);
       for (const relative of expectedFiles) {
         if (!await exists(join(root, relative))) throw new Error(`${label} archive is missing ${relative}`);
       }
       if (await exists(destination)) await rm(destination, { recursive: true, force: true });
       await rename(root, destination);
-      await writeFile(join(destination, '.installation-complete'), JSON.stringify({ sha256: descriptor.sha256, installedAt: new Date().toISOString() }) + '\n');
+      await writeFile(join(destination, '.installation-complete'), JSON.stringify({
+        sha256: descriptor.sha256,
+        size: descriptor.size,
+        installedAt: new Date().toISOString(),
+      }) + '\n');
     } finally {
       await rm(temporary, { recursive: true, force: true });
     }
+  }, {
+    onRecovered: () => onStatus?.(`Recovered an interrupted ${label} installation`),
+    onWait: (lockPath, owner) => onStatus?.(
+      `Another process is installing ${label}; waiting up to 5 minutes` +
+      `${owner?.pid ? ` (PID ${owner.pid})` : ''}: ${lockPath}`,
+    ),
   });
 }
 
@@ -145,8 +149,8 @@ export async function install(options = {}) {
   const { browser, asset, fontPack } = findBuild(manifest, version, key);
   const paths = pathsFor(root, version, key, asset, fontPack);
   await mkdir(join(root, '.downloads'), { recursive: true });
-  await installAsset({ descriptor: fontPack, destination: paths.fontDirectory, expectedFiles: [fontPack.profile], cache: root, label: 'Rhendium font pack', onProgress: options.onProgress });
-  await installAsset({ descriptor: asset, destination: paths.browserDirectory, expectedFiles: [asset.executable], cache: root, label: 'Rhendium browser', onProgress: options.onProgress });
+  await installAsset({ descriptor: fontPack, destination: paths.fontDirectory, expectedFiles: [fontPack.profile], cache: root, label: 'Rhendium font pack', onProgress: options.onProgress, onStatus: options.onStatus });
+  await installAsset({ descriptor: asset, destination: paths.browserDirectory, expectedFiles: [asset.executable], cache: root, label: 'Rhendium browser', onProgress: options.onProgress, onStatus: options.onStatus });
   if (hostPlatform() !== 'win32') await chmod(paths.executablePath, 0o755);
   return { version: browser.version, chromiumVersion: browser.chromiumVersion, platformKey: key, ...paths };
 }

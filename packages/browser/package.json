@@ -1,6 +1,6 @@
 {
   "name": "@rhendium/browser",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Verified downloader and cache for Rhendium browser builds",
   "type": "module",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "src"
   ],
   "dependencies": {
-    "extract-zip": "^2.0.1"
+    "yauzl": "^3.3.1"
   },
   "engines": {
     "node": ">=20"

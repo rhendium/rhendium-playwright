@@ -18,9 +18,13 @@ function reportDownload({ label, receivedBytes, totalBytes, complete }) {
   }
 }
 
+function reportStatus(message) {
+  console.error(message);
+}
+
 try {
   if (command === 'install') {
-    const result = await install({ version, onProgress: reportDownload });
+    const result = await install({ version, onProgress: reportDownload, onStatus: reportStatus });
     console.log(`Installed Rhendium ${result.version}`);
     console.log(result.executablePath);
   } else if (command === 'path') {

@@ -116,7 +116,8 @@ await browser.close();
 Downloads are explicit rather than npm `postinstall` side effects. Set
 `RHENDIUM_BROWSERS_PATH` to change the cache, or use
 `RHENDIUM_EXECUTABLE_PATH` together with `RHENDIUM_FONT_CONFIG` to test a local
-build.
+build. Interrupted installs recover stale locks automatically, and concurrent
+installers report what they are waiting for.
 
 The initial release supports Linux x86-64 (glibc 2.25 or newer) and Windows
 x86-64. macOS assets can be added to the embedded build manifest without

@@ -9,6 +9,7 @@ export interface InstallOptions {
   platformKey?: string;
   cachePath?: string;
   onProgress?: (progress: DownloadProgress) => void;
+  onStatus?: (message: string) => void;
 }
 export interface Installation {
   version: string;

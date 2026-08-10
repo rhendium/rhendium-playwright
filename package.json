@@ -1,14 +1,14 @@
 {
   "name": "rhendium-playwright-workspace",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Rhendium browser downloads and Playwright integration",
   "type": "module",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "test": "node --test packages/browser/test/browser.test.js packages/playwright/test/playwright.test.js",
+    "test": "node --test packages/browser/test/browser.test.js packages/browser/test/installer.test.js packages/playwright/test/playwright.test.js",
     "test:integration": "node packages/playwright/test/integration.js"
   },
   "devDependencies": {
