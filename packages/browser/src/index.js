@@ -1,14 +1,17 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { createReadStream, createWriteStream, existsSync, readFileSync } from 'node:fs';
 import { access, chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
-import { homedir, platform as hostPlatform, arch as hostArch } from 'node:os';
+import { platform as hostPlatform, arch as hostArch } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { extractArchive } from './archive.js';
+import { resolvedCacheRoot } from './cache.js';
 import { installationComplete } from './installation.js';
 import { withLock } from './lock.js';
+
+export { cacheRoot } from './cache.js';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifestPath = join(packageRoot, 'builds.json');
@@ -25,13 +28,6 @@ export function platformKey(platform = hostPlatform(), arch = hostArch()) {
   const os = platform === 'win32' ? 'win' : platform === 'darwin' ? 'mac' : platform;
   const cpu = arch === 'x64' ? 'x64' : arch === 'arm64' ? 'arm64' : arch;
   return `${os}-${cpu}`;
-}
-
-export function cacheRoot(env = process.env) {
-  if (env.RHENDIUM_BROWSERS_PATH) return env.RHENDIUM_BROWSERS_PATH;
-  if (hostPlatform() === 'win32') return join(env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local'), 'rhendium-playwright');
-  if (hostPlatform() === 'darwin') return join(homedir(), 'Library', 'Caches', 'rhendium-playwright');
-  return join(env.XDG_CACHE_HOME || join(homedir(), '.cache'), 'rhendium-playwright');
 }
 
 function findBuild(manifest, version, key) {
@@ -145,7 +141,7 @@ export async function install(options = {}) {
   const manifest = await loadManifest();
   const version = options.version || process.env.RHENDIUM_VERSION || manifest.defaultBrowserVersion;
   const key = options.platformKey || platformKey();
-  const root = options.cachePath || cacheRoot();
+  const root = resolvedCacheRoot({ cachePath: options.cachePath, onStatus: options.onStatus });
   const { browser, asset, fontPack } = findBuild(manifest, version, key);
   const paths = pathsFor(root, version, key, asset, fontPack);
   await mkdir(join(root, '.downloads'), { recursive: true });
@@ -164,7 +160,7 @@ export function resolveInstallationSync(options = {}) {
   const version = options.version || process.env.RHENDIUM_VERSION || manifest.defaultBrowserVersion;
   const key = options.platformKey || platformKey();
   const { browser, asset, fontPack } = findBuild(manifest, version, key);
-  const paths = pathsFor(options.cachePath || cacheRoot(), version, key, asset, fontPack);
+  const paths = pathsFor(resolvedCacheRoot({ cachePath: options.cachePath }), version, key, asset, fontPack);
   if (!existsSync(paths.executablePath) || !existsSync(paths.fontConfigPath)) {
     throw new Error(`Rhendium ${version} is not installed for ${key}. Run: npx rhendium install`);
   }

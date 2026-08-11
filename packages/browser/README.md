@@ -15,8 +15,12 @@ Re-running the command reuses only assets whose completion marker matches the
 current digest. Interrupted installs recover stale locks automatically, while
 an active concurrent installer is reported with its PID and lock path.
 
-Set `RHENDIUM_BROWSERS_PATH` to choose a cache directory. For local development,
-set both `RHENDIUM_EXECUTABLE_PATH` and `RHENDIUM_FONT_CONFIG`.
+The default cache directory is `%LOCALAPPDATA%\rhendium` on Windows,
+`~/.cache/rhendium` on Linux, and `~/Library/Caches/rhendium` on macOS. Version
+0.1.4 automatically migrates the former `rhendium-playwright` directory without
+re-downloading it. Set `RHENDIUM_BROWSERS_PATH` to choose a different cache
+directory. For local development, set both `RHENDIUM_EXECUTABLE_PATH` and
+`RHENDIUM_FONT_CONFIG`.
 
 See the [Rhendium Playwright repository](https://github.com/rhendium/rhendium-playwright)
 for the API and release policy.

@@ -118,7 +118,10 @@ Downloads are explicit rather than npm `postinstall` side effects. Set
 `RHENDIUM_BROWSERS_PATH` to change the cache, or use
 `RHENDIUM_EXECUTABLE_PATH` together with `RHENDIUM_FONT_CONFIG` to test a local
 build. Interrupted installs recover stale locks automatically, and concurrent
-installers report what they are waiting for.
+installers report what they are waiting for. The default cache directory is
+`%LOCALAPPDATA%\rhendium` on Windows, `~/.cache/rhendium` on Linux, and
+`~/Library/Caches/rhendium` on macOS. Version 0.1.4 automatically renames the
+old `rhendium-playwright` cache instead of downloading its contents again.
 
 The initial release supports Linux x86-64 (glibc 2.25 or newer) and Windows
 x86-64. macOS assets can be added to the embedded build manifest without
