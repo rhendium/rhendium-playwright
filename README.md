@@ -17,8 +17,9 @@ This integration downloads and launches Rhendium from Playwright. Browser
 binaries and the verified cross-platform Noto font pack come from immutable
 GitHub Release assets and are verified and cached separately. Separating the
 font pack avoids downloading the same fonts again for every operating system.
-Rhendium uses software compositing by default; pass `--enable-gpu` only when
-GPU acceleration is required and pixel-identical output is not expected.
+Rhendium uses software compositing and bundled SwiftShader WebGL by default;
+pass `--enable-gpu` only when hardware acceleration is required and
+pixel-identical output is not expected.
 
 This repository publishes two packages:
 

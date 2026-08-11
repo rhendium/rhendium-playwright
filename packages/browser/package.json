@@ -1,6 +1,6 @@
 {
   "name": "@rhendium/browser",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Verified downloader and cache for Rhendium browser builds",
   "type": "module",
   "license": "MIT",

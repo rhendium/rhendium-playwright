@@ -8,8 +8,9 @@ Rhendium's versioned cross-platform output is the final standard. Native
 browser chrome remains the normal Chromium UI for each platform.
 
 This package connects Rhendium to Playwright and automatically supplies the
-matching external font profile. It uses software compositing by default;
-passing `--enable-gpu` opts out of the pixel-consistency guarantee.
+matching external font profile. It uses software compositing and bundled
+SwiftShader WebGL by default; passing `--enable-gpu` opts out of the
+pixel-consistency guarantee.
 
 ```sh
 npm install --save-dev @playwright/test @rhendium/playwright

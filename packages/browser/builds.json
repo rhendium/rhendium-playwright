@@ -5,21 +5,21 @@
     {
       "version": "153.0.7995.0-r1",
       "chromiumVersion": "153.0.7995.0",
-      "sourceCommit": "8f19305a401f4d1bf7672af08f5790df0f9f4477",
+      "sourceCommit": "8fb6dcb0786a43547d2b39d90a8b947e8b464d2b",
       "fontPack": "noto-canonical-2026.08.01-1",
       "assets": {
         "linux-x64": {
           "url": "https://github.com/rhendium/rhendium/releases/download/v153.0.7995.0-r1/rhendium-153.0.7995.0-r1-linux-x64.zip",
-          "sha256": "25e03493eb76439e020cd5d229ce66189fac50f93a395492f5be63f877914bfb",
-          "size": 207043691,
+          "sha256": "ae46be30f79ce02fc56d27880dbd1fd575808abae7256e5337de42359bd21e88",
+          "size": 205818232,
           "archiveRoot": "rhendium-linux-x64",
           "executable": "chrome",
           "minimumGlibc": "2.25"
         },
         "win-x64": {
           "url": "https://github.com/rhendium/rhendium/releases/download/v153.0.7995.0-r1/rhendium-153.0.7995.0-r1-win-x64.zip",
-          "sha256": "281f8c24096d89e538774ca019142ed6d9ae008b51427bff89d174cf142c4f5c",
-          "size": 194346657,
+          "sha256": "b1e0d0f8655756e88a9228fca6ef225963c760d8bcf5515eea24540514c0aa0b",
+          "size": 194346260,
           "archiveRoot": "rhendium-win-x64",
           "executable": "chrome.exe"
         }
