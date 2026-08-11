@@ -9,7 +9,7 @@ import { pipeline } from 'node:stream/promises';
 import { extractArchive } from './archive.js';
 import { resolvedCacheRoot } from './cache.js';
 import { installationComplete } from './installation.js';
-import { writeLauncher } from './launcher.js';
+import { writeLaunchers } from './launcher.js';
 import { withLock } from './lock.js';
 
 export { cacheRoot } from './cache.js';
@@ -149,15 +149,22 @@ export async function install(options = {}) {
   await installAsset({ descriptor: fontPack, destination: paths.fontDirectory, expectedFiles: [fontPack.profile], cache: root, label: 'Rhendium font pack', onProgress: options.onProgress, onStatus: options.onStatus });
   await installAsset({ descriptor: asset, destination: paths.browserDirectory, expectedFiles: [asset.executable], cache: root, label: 'Rhendium browser', onProgress: options.onProgress, onStatus: options.onStatus });
   if (hostPlatform() !== 'win32') await chmod(paths.executablePath, 0o755);
-  const launcherPath = await writeLauncher({
+  const { launcherPath, gpuLauncherPath } = await writeLaunchers({
     root,
     version: browser.version,
     key,
     asset,
     fontPack,
   });
-  options.onStatus?.(`Created Rhendium launcher: ${launcherPath}`);
-  return { version: browser.version, chromiumVersion: browser.chromiumVersion, platformKey: key, ...paths, launcherPath };
+  options.onStatus?.(`Created Rhendium launchers: ${launcherPath}, ${gpuLauncherPath}`);
+  return {
+    version: browser.version,
+    chromiumVersion: browser.chromiumVersion,
+    platformKey: key,
+    ...paths,
+    launcherPath,
+    gpuLauncherPath,
+  };
 }
 
 export function resolveInstallationSync(options = {}) {

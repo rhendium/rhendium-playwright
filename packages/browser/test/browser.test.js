@@ -6,7 +6,7 @@ import { basename, join } from 'node:path';
 import test from 'node:test';
 import { fontConfigArgument, loadManifest, platformKey } from '../src/index.js';
 import { cacheRoot, resolvedCacheRoot } from '../src/cache.js';
-import { writeLauncher } from '../src/launcher.js';
+import { writeLaunchers } from '../src/launcher.js';
 
 test('normalizes supported platform keys', () => {
   assert.equal(platformKey('linux', 'x64'), 'linux-x64');
@@ -52,33 +52,45 @@ test('writes portable launchers for Windows, Linux, and macOS', async () => {
     fontPack: { id: 'noto-canonical', profile: 'active-profile.json' },
   };
   try {
-    const windowsPath = await writeLauncher({
+    const windowsPaths = await writeLaunchers({
       ...descriptor,
       key: 'win-x64',
       asset: { executable: 'chrome.exe' },
       platform: 'win32',
     });
-    const windows = await readFile(windowsPath, 'utf8');
-    assert.equal(basename(windowsPath), 'Rhendium.cmd');
+    const windows = await readFile(windowsPaths.launcherPath, 'utf8');
+    const windowsGpu = await readFile(windowsPaths.gpuLauncherPath, 'utf8');
+    assert.equal(basename(windowsPaths.launcherPath), 'Rhendium.cmd');
+    assert.equal(basename(windowsPaths.gpuLauncherPath), 'Rhendium-GPU.cmd');
     assert.match(windows, /%~dp0browsers\\153\.0\.7995\.0-r1\\win-x64\\chrome\.exe/);
     assert.match(windows, /--rhendium-font-config=%~dp0fonts\\noto-canonical\\active-profile\.json/);
     assert.doesNotMatch(windows, new RegExp(root.replaceAll('\\', '\\\\')));
+    assert.doesNotMatch(windows, /--enable-gpu/);
+    assert.match(windowsGpu, /--enable-gpu/);
 
-    const linuxPath = await writeLauncher({ ...descriptor, platform: 'linux' });
-    const linux = await readFile(linuxPath, 'utf8');
-    assert.equal(basename(linuxPath), 'Rhendium.sh');
+    const linuxPaths = await writeLaunchers({ ...descriptor, platform: 'linux' });
+    const linux = await readFile(linuxPaths.launcherPath, 'utf8');
+    const linuxGpu = await readFile(linuxPaths.gpuLauncherPath, 'utf8');
+    assert.equal(basename(linuxPaths.launcherPath), 'Rhendium.sh');
+    assert.equal(basename(linuxPaths.gpuLauncherPath), 'Rhendium-GPU.sh');
     assert.match(linux, /rhendium_root\/browsers\/153\.0\.7995\.0-r1\/linux-x64\/chrome/);
     assert.match(linux, /"\$@"/);
+    assert.doesNotMatch(linux, /--enable-gpu/);
+    assert.match(linuxGpu, /--enable-gpu/);
 
-    const macPath = await writeLauncher({
+    const macPaths = await writeLaunchers({
       ...descriptor,
       key: 'mac-arm64',
       asset: { executable: 'Rhendium.app/Contents/MacOS/Rhendium' },
       platform: 'darwin',
     });
-    const mac = await readFile(macPath, 'utf8');
-    assert.equal(basename(macPath), 'Rhendium.command');
+    const mac = await readFile(macPaths.launcherPath, 'utf8');
+    const macGpu = await readFile(macPaths.gpuLauncherPath, 'utf8');
+    assert.equal(basename(macPaths.launcherPath), 'Rhendium.command');
+    assert.equal(basename(macPaths.gpuLauncherPath), 'Rhendium-GPU.command');
     assert.match(mac, /Rhendium\.app\/Contents\/MacOS\/Rhendium/);
+    assert.doesNotMatch(mac, /--enable-gpu/);
+    assert.match(macGpu, /--enable-gpu/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

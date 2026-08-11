@@ -20,6 +20,7 @@ export interface Installation {
   executablePath: string;
   fontConfigPath: string;
   launcherPath?: string;
+  gpuLauncherPath?: string;
 }
 export function loadManifest(): Promise<unknown>;
 export function loadManifestSync(): unknown;

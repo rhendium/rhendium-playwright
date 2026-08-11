@@ -9,10 +9,8 @@ npx rhendium install
 npx rhendium doctor
 ```
 
-Installation creates `Rhendium.cmd` on Windows, `Rhendium.sh` on Linux, or
-`Rhendium.command` on macOS at the cache root. It can be double-clicked to run
-the browser with the installed font configuration, and it forwards additional
-arguments when invoked from a terminal.
+Installation creates `Rhendium.*` and `Rhendium-GPU.*` launchers at the cache
+root for default software rendering and hardware GPU rendering.
 
 Browser binaries and fonts are separate immutable GitHub Release assets. This
 package verifies each asset's byte size and SHA-256 digest before installing it.

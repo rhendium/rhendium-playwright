@@ -28,6 +28,7 @@ try {
     console.log(`Installed Rhendium ${result.version}`);
     console.log(`Browser: ${result.executablePath}`);
     console.log(`Launcher: ${result.launcherPath}`);
+    console.log(`GPU launcher: ${result.gpuLauncherPath}`);
   } else if (command === 'path') {
     console.log((await resolveInstallation({ version })).executablePath);
   } else if (command === 'verify' || command === 'doctor') {
