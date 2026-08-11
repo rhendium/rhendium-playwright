@@ -26,7 +26,8 @@ try {
   if (command === 'install') {
     const result = await install({ version, onProgress: reportDownload, onStatus: reportStatus });
     console.log(`Installed Rhendium ${result.version}`);
-    console.log(result.executablePath);
+    console.log(`Browser: ${result.executablePath}`);
+    console.log(`Launcher: ${result.launcherPath}`);
   } else if (command === 'path') {
     console.log((await resolveInstallation({ version })).executablePath);
   } else if (command === 'verify' || command === 'doctor') {

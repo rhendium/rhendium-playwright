@@ -6,6 +6,7 @@ import { basename, join } from 'node:path';
 import test from 'node:test';
 import { fontConfigArgument, loadManifest, platformKey } from '../src/index.js';
 import { cacheRoot, resolvedCacheRoot } from '../src/cache.js';
+import { writeLauncher } from '../src/launcher.js';
 
 test('normalizes supported platform keys', () => {
   assert.equal(platformKey('linux', 'x64'), 'linux-x64');
@@ -38,6 +39,48 @@ test('migrates the legacy default cache without downloading again', async () => 
     assert.deepEqual(statuses, [`Migrated Rhendium cache to ${current}`]);
   } finally {
     await rm(parent, { recursive: true, force: true });
+  }
+});
+
+test('writes portable launchers for Windows, Linux, and macOS', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'rhendium-launcher-'));
+  const descriptor = {
+    root,
+    version: '153.0.7995.0-r1',
+    key: 'linux-x64',
+    asset: { executable: 'chrome' },
+    fontPack: { id: 'noto-canonical', profile: 'active-profile.json' },
+  };
+  try {
+    const windowsPath = await writeLauncher({
+      ...descriptor,
+      key: 'win-x64',
+      asset: { executable: 'chrome.exe' },
+      platform: 'win32',
+    });
+    const windows = await readFile(windowsPath, 'utf8');
+    assert.equal(basename(windowsPath), 'Rhendium.cmd');
+    assert.match(windows, /%~dp0browsers\\153\.0\.7995\.0-r1\\win-x64\\chrome\.exe/);
+    assert.match(windows, /--rhendium-font-config=%~dp0fonts\\noto-canonical\\active-profile\.json/);
+    assert.doesNotMatch(windows, new RegExp(root.replaceAll('\\', '\\\\')));
+
+    const linuxPath = await writeLauncher({ ...descriptor, platform: 'linux' });
+    const linux = await readFile(linuxPath, 'utf8');
+    assert.equal(basename(linuxPath), 'Rhendium.sh');
+    assert.match(linux, /rhendium_root\/browsers\/153\.0\.7995\.0-r1\/linux-x64\/chrome/);
+    assert.match(linux, /"\$@"/);
+
+    const macPath = await writeLauncher({
+      ...descriptor,
+      key: 'mac-arm64',
+      asset: { executable: 'Rhendium.app/Contents/MacOS/Rhendium' },
+      platform: 'darwin',
+    });
+    const mac = await readFile(macPath, 'utf8');
+    assert.equal(basename(macPath), 'Rhendium.command');
+    assert.match(mac, /Rhendium\.app\/Contents\/MacOS\/Rhendium/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
   }
 });
 

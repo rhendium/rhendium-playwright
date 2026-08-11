@@ -19,6 +19,7 @@ export interface Installation {
   fontDirectory?: string;
   executablePath: string;
   fontConfigPath: string;
+  launcherPath?: string;
 }
 export function loadManifest(): Promise<unknown>;
 export function loadManifestSync(): unknown;

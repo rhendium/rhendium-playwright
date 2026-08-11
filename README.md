@@ -34,6 +34,12 @@ npm install --save-dev @playwright/test @rhendium/playwright
 npx rhendium install
 ```
 
+Installation also creates a direct launcher at the cache root: `Rhendium.cmd`
+on Windows, `Rhendium.sh` on Linux, or `Rhendium.command` on macOS. The install
+command prints its exact path. Double-click it to run Rhendium with the required
+font configuration; command-line arguments are forwarded when it is launched
+from a terminal.
+
 ```js
 import { defineConfig } from '@playwright/test';
 import { rhendiumProject } from '@rhendium/playwright';
