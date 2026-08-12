@@ -1,11 +1,10 @@
 # @rhendium/playwright
 
-Rhendium is a Chromium-based browser for **deterministic Chromium rendering**.
-It pins the engine and rendering rules and uses a verified external Noto font
-pack so ordinary webpage content can produce the same pixels on Windows,
-Linux, and macOS. A pinned KDE Chromium build is the visual reference;
-Rhendium's versioned cross-platform output is the final standard. Native
-browser chrome remains the normal Chromium UI for each platform.
+Rhendium is a Chromium-based browser designed for cross-platform visual testing
+through **deterministic Chromium rendering**. It pins the engine and rendering
+rules and uses a verified external Noto font pack so ordinary webpage content
+can produce the same pixels on Windows, Linux, and macOS. Native browser chrome
+remains the normal Chromium UI for each platform.
 
 This package connects Rhendium to Playwright and automatically supplies the
 matching external font profile. It uses software compositing and bundled

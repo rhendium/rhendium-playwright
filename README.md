@@ -6,12 +6,12 @@
   </a>
 </p>
 
-[Rhendium](https://github.com/rhendium/rhendium) is a Chromium-based browser for **deterministic Chromium rendering**:
-ordinary webpage content is intended to produce the same pixels on Windows,
-Linux, and macOS. A pinned KDE Chromium build is its visual reference, while
-Rhendium's own versioned, cross-platform rendering protocol defines the final
-output. Browser chrome, menus, and window frames remain Chromium's normal
-platform UI and are outside the screenshot consistency guarantee.
+[Rhendium](https://github.com/rhendium/rhendium) is a Chromium-based browser
+designed for cross-platform visual testing through **deterministic Chromium
+rendering**. Ordinary webpage content is intended to produce the same pixels on
+Windows, Linux, and macOS. Browser chrome, menus, and window frames remain
+Chromium's normal platform UI and are outside the screenshot consistency
+guarantee.
 
 This integration downloads and launches Rhendium from Playwright. Browser
 binaries and the verified cross-platform Noto font pack come from immutable
