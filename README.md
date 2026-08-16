@@ -127,6 +127,6 @@ installers report what they are waiting for. The default cache directory is
 `~/Library/Caches/rhendium` on macOS. Version 0.1.4 automatically renames the
 old `rhendium-playwright` cache instead of downloading its contents again.
 
-The initial release supports Linux x86-64 (glibc 2.25 or newer) and Windows
-x86-64. macOS assets can be added to the embedded build manifest without
-changing the public API.
+The current release supports Linux x86-64 (glibc 2.25 or newer), Windows
+x86-64, and macOS Apple Silicon (arm64). macOS 13.0 or newer is required for
+the Mac browser asset.

@@ -22,6 +22,15 @@
           "size": 194346260,
           "archiveRoot": "rhendium-win-x64",
           "executable": "chrome.exe"
+        },
+        "mac-arm64": {
+          "url": "https://github.com/rhendium/rhendium/releases/download/v153.0.7995.0-r1/rhendium-153.0.7995.0-r1-mac-arm64.zip",
+          "sha256": "995524d7e4ba0d0b0e90fc0a6e5e510eb0a19702fcee5cd9a6e2d091dab8d646",
+          "size": 179918790,
+          "sourceCommit": "c061b5b53600a1a38f5c1f2ecbee36beac4d6407",
+          "archiveRoot": "rhendium-mac-arm64",
+          "executable": "Rhendium.app/Contents/MacOS/Rhendium",
+          "minimumMacOS": "13.0"
         }
       }
     }

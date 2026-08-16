@@ -1,6 +1,7 @@
 import { createWriteStream } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { lstat, mkdir, symlink } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
+import { buffer } from 'node:stream/consumers';
 import { pipeline } from 'node:stream/promises';
 import yauzl from 'yauzl';
 
@@ -62,6 +63,36 @@ function destinationFor(root, entryName) {
   return destination;
 }
 
+async function rejectSymlinkPath(path, description) {
+  try {
+    if ((await lstat(path)).isSymbolicLink())
+      throw new Error(`ZIP ${description} may not be a symbolic link: ${path}`);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
+
+async function ensureSafeParents(root, destination) {
+  let parent = resolve(destination, '..');
+  while (parent !== root) {
+    const fromRoot = relative(root, parent);
+    if (!fromRoot || fromRoot.startsWith('..') || isAbsolute(fromRoot))
+      throw new Error(`ZIP entry parent escapes its destination: ${destination}`);
+    await rejectSymlinkPath(parent, 'entry parent');
+    parent = resolve(parent, '..');
+  }
+}
+
+function safeSymlinkTarget(root, destination, target, entryName) {
+  if (!target || target.includes('\\') || target.includes('\0') || isAbsolute(target))
+    throw new Error(`Unsafe ZIP symbolic link target for ${entryName}: ${JSON.stringify(target)}`);
+  const resolvedTarget = resolve(destination, '..', target);
+  const fromRoot = relative(root, resolvedTarget);
+  if (!fromRoot || fromRoot.startsWith('..') || isAbsolute(fromRoot))
+    throw new Error(`ZIP symbolic link escapes its destination: ${entryName} -> ${target}`);
+  return target;
+}
+
 async function extractEntry(archive, entry, root, signal) {
   const destination = destinationFor(root, entry.fileName);
   const mode = (entry.externalFileAttributes >>> 16) & 0xffff;
@@ -71,9 +102,18 @@ async function extractEntry(archive, entry, root, signal) {
   const madeBy = entry.versionMadeBy >>> 8;
   if (!isDirectory && madeBy === 0 && entry.externalFileAttributes === 16)
     isDirectory = true;
-  if (isSymlink)
-    throw new Error(`Rhendium archives may not contain symbolic links: ${entry.fileName}`);
+  await ensureSafeParents(root, destination);
+  if (isSymlink) {
+    if (entry.uncompressedSize > 4096)
+      throw new Error(`ZIP symbolic link target is too long: ${entry.fileName}`);
+    await mkdir(resolve(destination, '..'), { recursive: true });
+    const input = await openEntryStream(archive, entry);
+    const target = new TextDecoder('utf-8', { fatal: true }).decode(await buffer(input));
+    await symlink(safeSymlinkTarget(root, destination, target, entry.fileName), destination);
+    return;
+  }
   if (isDirectory) {
+    await rejectSymlinkPath(destination, 'directory entry');
     await mkdir(destination, { recursive: true, mode: (mode & 0o777) || 0o755 });
     return;
   }
@@ -89,6 +129,7 @@ export async function extractArchive(path, { dir, signal } = {}) {
   if (!isAbsolute(dir)) throw new Error('ZIP destination must be an absolute path');
   await mkdir(dir, { recursive: true });
   const root = resolve(dir);
+  await rejectSymlinkPath(root, 'destination root');
   const archive = await openArchive(path);
   try {
     while (true) {
