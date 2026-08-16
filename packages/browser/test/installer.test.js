@@ -49,7 +49,10 @@ test('extracts safe relative symbolic links used by macOS frameworks', async () 
     await writeFile(archive, Buffer.from(safeSymlinkZip, 'base64'));
     await extractArchive(archive, { dir: extracted });
     assert.equal(await readlink(join(extracted, 'fixture', 'Versions', 'Current')), '1');
-    assert.equal(await readlink(join(extracted, 'fixture', 'data.txt')), 'Versions/Current/data.txt');
+    assert.equal(
+      (await readlink(join(extracted, 'fixture', 'data.txt'))).replaceAll('\\', '/'),
+      'Versions/Current/data.txt',
+    );
     assert.equal(await readFile(join(extracted, 'fixture', 'data.txt'), 'utf8'), 'safe symlink fixture\n');
   } finally {
     await rm(root, { recursive: true, force: true });
